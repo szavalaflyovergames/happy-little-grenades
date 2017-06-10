@@ -20,6 +20,7 @@ public class HLG_Player : MonoBehaviour
 	//Walking = after gameplay starts
 	//Grenade = dropping grenade
 
+	//Might not use the grenade state after all.
 	public enum State
 	{
 		IDLE, WALKING, GRENADE, RUNNING
@@ -38,8 +39,7 @@ public class HLG_Player : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
-		//For Testing
-		StartGame();
+		
 	}
 	
 	// Update is called once per frame
@@ -119,10 +119,20 @@ public class HLG_Player : MonoBehaviour
 
 	void DropGrenade(MonoBehaviour comp)
 	{
+		if (currentState != State.WALKING)
+			return;
+
 		Debug.Log ("Dropping 'Nades!");
 
 		GameObject grenade = GameObject.Instantiate (grenadePrefab, transform.position, Quaternion.identity);
 
 		grenade.GetComponent<HLG_Grenade> ().Drop (this);
+
+		currentState = State.RUNNING;
+	}
+
+	public void GrenadeExploded()
+	{
+		
 	}
 }

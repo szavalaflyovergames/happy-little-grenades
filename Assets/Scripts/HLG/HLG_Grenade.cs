@@ -37,6 +37,8 @@ public class HLG_Grenade : MonoBehaviour
 
 		GameObject.Instantiate (explosionPrefab, transform.position, Quaternion.Euler(-90.0f, 0.0f, 0.0f)); 
 
+		owner.GrenadeExploded ();
+
 		GameObject.Destroy (gameObject);	
 	}
 }
