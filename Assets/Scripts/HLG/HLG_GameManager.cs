@@ -49,6 +49,7 @@ public class HLG_GameManager : MonoBehaviour
 	// Use this for initialization
 	void Start () 
 	{
+		InputControl.ClearControlMappings ();
 		AssignIntroInputs ();
 
 		points = 0;
@@ -58,11 +59,17 @@ public class HLG_GameManager : MonoBehaviour
 	{
 		dialog.SelectIntro ();
 
+		HLG_UI.instance.HideIntro ();
 		HLG_UI.instance.ShowPlayerTextBubble (dialog.GetCurrentIntroLine ());
 
 		lineTimer = lineDelay;
 
 		currentState = State.INTRO;
+	}
+
+	void RestartGame(MonoBehaviour comp)
+	{
+		UnityEngine.SceneManagement.SceneManager.LoadScene (0);
 	}
 
 	void StartGame()
@@ -84,6 +91,12 @@ public class HLG_GameManager : MonoBehaviour
 	void EndGame()
 	{
 		currentState = State.ENDGAME;
+
+		HLG_UI.instance.ShowEndGame (points);
+
+		InputControl.ClearControlMappings ();
+
+		AssignEndInputs ();
 	}
 
 	void StartFollowerConversation()
@@ -100,6 +113,8 @@ public class HLG_GameManager : MonoBehaviour
 		currentAwkwardStep = 1;
 
 		UpdateAwkwardLevel ();
+
+		player.GrenadesEnabled = true;
 	}
 
 	void SelectFollower()
@@ -229,6 +244,19 @@ public class HLG_GameManager : MonoBehaviour
 		{
 			InputControl.AddInputMapping (i, this);
 			InputControl.AddInputHandler (InputControl.eDeviceType.Gamepad, InputControl.Button.A, StartIntro, null, null, i);
+		}
+	}
+
+	void AssignEndInputs()
+	{
+		InputControl.AddInputMapping (0, this);
+
+		InputControl.AddInputHandler (InputControl.eDeviceType.Keyboard, "space", RestartGame, null, null, 0);
+
+		for (int i = 1; i < 4; ++i) 
+		{
+			InputControl.AddInputMapping (i, this);
+			InputControl.AddInputHandler (InputControl.eDeviceType.Gamepad, InputControl.Button.A, RestartGame, null, null, i);
 		}
 	}
 

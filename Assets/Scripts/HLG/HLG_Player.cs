@@ -10,6 +10,17 @@ public class HLG_Player : MonoBehaviour
 
 	public GameObject grenadePrefab;
 
+	bool grenadesEnabled = false;
+
+	public bool GrenadesEnabled {
+		get {
+			return grenadesEnabled;
+		}
+		set {
+			grenadesEnabled = value;
+		}
+	}
+
 	Rigidbody myRigidbody;
 
 	Vector2 movementInputVector;
@@ -119,7 +130,7 @@ public class HLG_Player : MonoBehaviour
 
 	void DropGrenade(MonoBehaviour comp)
 	{
-		if (currentState != State.WALKING)
+		if (currentState != State.WALKING || !grenadesEnabled)
 			return;
 
 		Debug.Log ("Dropping 'Nades!");

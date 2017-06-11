@@ -7,8 +7,10 @@ using UnityEngine.UI;
 public class HLG_UI : MonoBehaviour 
 {
 	public GameObject introLogo;
+	public GameObject endGameScreen;
 
 	public TextMeshProUGUI scoreLabel;
+	public TextMeshProUGUI endGameScoreLabel;
 
 	public GameObject awkwardMeter;
 	public Image awkwardMeterFill;
@@ -43,6 +45,8 @@ public class HLG_UI : MonoBehaviour
 		playerWordBubble.SetActive (false);	
 		followerWordBubble.SetActive (false);	
 
+		endGameScreen.SetActive (false);
+
 		scoreLabel.gameObject.SetActive (false);
 
 		awkwardMeter.SetActive (false);
@@ -57,6 +61,20 @@ public class HLG_UI : MonoBehaviour
 
 			awkwardMeterFill.fillAmount = Mathf.Lerp (fillTarget, prevFill, lerpTimer / lerpDelay);
 		}
+	}
+
+	public void HideIntro()
+	{
+		introLogo.SetActive (false);
+	}
+
+	public void ShowEndGame(int points)
+	{
+		endGameScreen.SetActive (true);
+		endGameScoreLabel.text = points.ToString ();
+
+		scoreLabel.gameObject.SetActive (false);
+		awkwardMeter.SetActive (false);
 	}
 
 	public void SetAwkwardMeterFill(float fill)
