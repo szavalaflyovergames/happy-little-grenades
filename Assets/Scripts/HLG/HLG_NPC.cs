@@ -10,6 +10,11 @@ public class HLG_NPC : MonoBehaviour
 	public int pointValue = 100;
 
 	public float wanderSpeed = 3.0f;
+	public float followSpeed = 7.0f;
+
+	public float followDistance = 1.0f;
+
+	Rigidbody myRigidbody;
 
 	public enum State
 	{
@@ -23,6 +28,8 @@ public class HLG_NPC : MonoBehaviour
 		exploder = GetComponentInChildren<HLG_Exploder> ();
 
 		exploder.callback += Explode;
+
+		myRigidbody = GetComponent<Rigidbody> ();
 	}
 
 
@@ -47,6 +54,17 @@ public class HLG_NPC : MonoBehaviour
 
 	void FollowUpdate()
 	{
+		Vector3 vecTo = transform.position - HLG_GameManager.instance.player.transform.position;
+
+		Vector3 lerpPoint = HLG_GameManager.instance.player.transform.position + vecTo.normalized * followDistance;
+
+		//I hate this kind of lerp, but it's late
+		vecTo = lerpPoint - transform.position;
+
+		if (vecTo.magnitude > .1f)
+			myRigidbody.velocity = vecTo.normalized * followSpeed;
+		else
+			myRigidbody.velocity = Vector3.zero;
 	}
 
 	void Explode()
