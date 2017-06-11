@@ -91,26 +91,35 @@ public class HLG_UI : MonoBehaviour
 		awkwardMeter.SetActive (true);
 	}
 
+	//It's not good to put the audio here, but the clock is ticking...
 	public void ShowPlayerTextBubble(string text)
 	{
 		playerWordBubble.SetActive (true);
 		playerText.text = text;
+
+		HLG_GameManager.instance.player.GetComponent<AudioSource> ().UnPause ();
 	}
 
 	public void ShowFollowerTextBubble(string text)
 	{
 		followerWordBubble.SetActive (true);
 		followerText.text = text;
+
+		HLG_GameManager.instance.followerVoice.GetComponent<AudioSource> ().UnPause ();
 	}
 
 	public void HidePlayerTextBubble()
 	{
 		playerWordBubble.SetActive (false);
+
+		HLG_GameManager.instance.player.GetComponent<AudioSource> ().Pause ();
 	}
 
 	public void HideFollowerTextBubble()
 	{
 		followerWordBubble.SetActive (false);
+
+		HLG_GameManager.instance.followerVoice.GetComponent<AudioSource> ().Pause ();
 	}
 
 	public void UpdateScore(int points)

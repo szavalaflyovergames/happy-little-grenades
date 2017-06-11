@@ -7,10 +7,12 @@ public class HLG_Exploder : MonoBehaviour
 {
 	public GameObject explosionPrefab;
 
-	public delegate void ExplosionCallback();
+	public delegate void ExplosionCallback(GameObject trigger);
 
 	//This will be use by the npc characters
 	public ExplosionCallback callback;
+
+	public AudioClip explosionSound;
 
 	void OnTriggerEnter(Collider col)
 	{
@@ -22,6 +24,9 @@ public class HLG_Exploder : MonoBehaviour
 
 	void Explode()
 	{
+		if(explosionSound != null)
+			AudioSource.PlayClipAtPoint (explosionSound, transform.position);
+
 		//TODO: score points
 		if (explosionPrefab != null) 
 		{
@@ -31,6 +36,6 @@ public class HLG_Exploder : MonoBehaviour
 		Component.Destroy (this);
 
 		if (callback != null)
-			callback ();
+			callback (gameObject);
 	}
 }

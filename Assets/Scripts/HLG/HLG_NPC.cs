@@ -16,6 +16,10 @@ public class HLG_NPC : MonoBehaviour
 
 	Rigidbody myRigidbody;
 
+	Vector3 movementDirection;
+
+	SpriteRenderer mySprite;
+
 	public enum State
 	{
 		WANDER, FOLLOW, EXPLODED
@@ -30,6 +34,15 @@ public class HLG_NPC : MonoBehaviour
 		exploder.callback += Explode;
 
 		myRigidbody = GetComponent<Rigidbody> ();
+
+		float randomX = Random.Range (-1.0f, 1.0f);
+		float randomZ = Random.Range (-1.0f, 1.0f);
+
+		movementDirection = new Vector3 (randomX, 0.0f, randomZ).normalized;
+
+		myRigidbody.velocity = movementDirection * wanderSpeed;
+
+		mySprite = GetComponentInChildren<SpriteRenderer> ();
 	}
 
 
@@ -46,10 +59,13 @@ public class HLG_NPC : MonoBehaviour
 		case State.EXPLODED:
 			break;
 		}
+	
+
 	}
 
 	void WanderUpdate()
 	{
+		mySprite.flipX = myRigidbody.velocity.x < 0.0f;
 	}
 
 	void FollowUpdate()
@@ -65,17 +81,58 @@ public class HLG_NPC : MonoBehaviour
 			myRigidbody.velocity = vecTo.normalized * followSpeed;
 		else
 			myRigidbody.velocity = Vector3.zero;
+
+		if(Mathf.Abs(vecTo.x) >= .05)
+			mySprite.flipX = vecTo.x < 0.0f;
 	}
 
-	void Explode()
+	void Explode(GameObject trigger)
 	{
 		HLG_GameManager.instance.ScorePoints (pointValue);
 	
 		//TODO: death animation? Fly up into the air?
+		myRigidbody.velocity = Vector3.zero;
+
+		Vector3 vecTo = trigger.transform.position - transform.position;
+
+		vecTo.y = 0.0f;
+		vecTo.Normalize ();
+
+		Vector3 force = vecTo * 500.0f;
+
+		force += Camera.main.transform.up * 500.0f;
+
+		myRigidbody.constraints = RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezePositionX;
+
+		myRigidbody.AddForce (force);
+
+		float torque = Random.Range (-100.0f, 100.0f);
+
+		myRigidbody.AddTorque (new Vector3 (0.0f, 0.0f, torque));
+
+		currentState = State.EXPLODED;
 	}
 
 	public void SetToFollower()
 	{
 		currentState = State.FOLLOW;
+	}
+
+	public void OnCollisionEnter(Collision col)
+	{
+		if (col.gameObject.layer == LayerMask.NameToLayer ("Wall")) 
+		{
+			Vector3 reflect = Vector3.Reflect (movementDirection, col.gameObject.transform.forward).normalized;
+
+//			reflect.x += Random.Range (-.1f, .1f);
+//			reflect.z += Random.Range (-.1f, .1f);
+
+			reflect.y = 0.0f;
+			reflect.Normalize ();
+
+			movementDirection = reflect;
+
+			myRigidbody.velocity = movementDirection * wanderSpeed;
+		}
 	}
 }

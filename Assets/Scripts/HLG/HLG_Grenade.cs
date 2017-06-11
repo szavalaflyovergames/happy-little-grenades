@@ -40,5 +40,7 @@ public class HLG_Grenade : MonoBehaviour
 		owner.GrenadeExploded ();
 
 		GameObject.Destroy (gameObject);	
+
+		AudioSource.PlayClipAtPoint (HLG_SoundManager.instance.explosionMedium, transform.position);
 	}
 }

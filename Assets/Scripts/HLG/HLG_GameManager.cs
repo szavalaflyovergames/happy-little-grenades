@@ -31,6 +31,8 @@ public class HLG_GameManager : MonoBehaviour
 	float scoreTimer;
 	public float scoreDelay = 5.0f;
 
+	public AudioSource followerVoice;
+
 	//List<HLG_NPC> npcs;
 
 	State currentState;
@@ -53,6 +55,9 @@ public class HLG_GameManager : MonoBehaviour
 		AssignIntroInputs ();
 
 		points = 0;
+	
+		followerVoice.Pause ();
+		player.GetComponent<AudioSource> ().Pause ();
 	}
 
 	void StartIntro(MonoBehaviour comp)

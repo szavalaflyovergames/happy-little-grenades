@@ -22,6 +22,7 @@ public class HLG_Player : MonoBehaviour
 	}
 
 	Rigidbody myRigidbody;
+	SpriteRenderer mySprite;
 
 	Vector2 movementInputVector;
 
@@ -45,6 +46,8 @@ public class HLG_Player : MonoBehaviour
 	void Awake()
 	{
 		myRigidbody = GetComponentInChildren<Rigidbody> ();
+
+		mySprite = GetComponentInChildren<SpriteRenderer> ();
 	}
 
 	// Use this for initialization
@@ -77,6 +80,9 @@ public class HLG_Player : MonoBehaviour
 
 			myRigidbody.velocity = new Vector3 (movementInputVector.x, 0.0f, movementInputVector.y);
 		}
+
+		if(Mathf.Abs(myRigidbody.velocity.x) >= .05)
+			mySprite.flipX = myRigidbody.velocity.x < 0.0f;
 	}
 
 	void ReceiveInput()
