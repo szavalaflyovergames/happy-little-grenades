@@ -9,9 +9,17 @@ public class HLG_GameManager : MonoBehaviour
 
 	public GameObject npcPrefab;	//Prefab to instantiate for the NPCs
 
+	public float maxAwkwardMulti = 4.0f;
+	float awkwardLevel = 1.0f;
+
+	int currentAwkwardStep;
+	int numberOfSteps;		//Number of awkward level steps
+
 	public static HLG_GameManager instance;	//Use this static instance to interface with the game manager in all the other classes
 
 	int points;
+
+	int objectsExploded;
 
 	HLG_Dialog dialog;
 
@@ -20,12 +28,15 @@ public class HLG_GameManager : MonoBehaviour
 
 	public HLG_NPC[] testNPCs;
 
+	float scoreTimer;
+	public float scoreDelay = 5.0f;
+
 	//List<HLG_NPC> npcs;
 
 	State currentState;
 	public enum State
 	{
-		PREGAME, INTRO, PLAYING, ENDGAME
+		PREGAME, INTRO, PLAYING, GRENADE, ENDGAME
 	}
 
 	void Awake()
@@ -70,6 +81,11 @@ public class HLG_GameManager : MonoBehaviour
 		currentState = State.PLAYING;
 	}
 
+	void EndGame()
+	{
+		currentState = State.ENDGAME;
+	}
+
 	void StartFollowerConversation()
 	{
 		SelectFollower ();
@@ -79,6 +95,11 @@ public class HLG_GameManager : MonoBehaviour
 		HLG_UI.instance.ShowFollowerTextBubble (dialog.GetCurrentFollowerLine ());
 
 		lineTimer = lineDelay;
+	
+		numberOfSteps = dialog.followerConversations [dialog.currentConversation].lines.Length / 2;
+		currentAwkwardStep = 1;
+
+		UpdateAwkwardLevel ();
 	}
 
 	void SelectFollower()
@@ -115,7 +136,8 @@ public class HLG_GameManager : MonoBehaviour
 			}
 			break;
 		case State.PLAYING:
-			if (lineTimer > 0.0f) {
+			if (lineTimer > 0.0f) 
+			{
 				lineTimer -= Time.deltaTime;
 				if (lineTimer <= 0.0f) {
 					dialog.currentLine++;
@@ -124,18 +146,48 @@ public class HLG_GameManager : MonoBehaviour
 					{
 						//TODO: figure out what to do here.
 						HLG_UI.instance.HideFollowerTextBubble ();
-					} else {
+					} 
+					else 
+					{
 						lineTimer = lineDelay;
 
-						if (dialog.currentLine % 2 == 0) {
+						if (dialog.currentLine % 2 == 0) 
+						{
 							HLG_UI.instance.ShowFollowerTextBubble (dialog.GetCurrentFollowerLine ());
 							HLG_UI.instance.HidePlayerTextBubble ();
-						} else {
+
+							//If it's the last line, end the awkward
+							if (dialog.currentLine == dialog.followerConversations [dialog.currentConversation].lines.Length - 1) 
+							{
+								awkwardLevel = 1.0f;
+
+								HLG_UI.instance.SetAwkwardMeterFill (0.0f);
+								HLG_UI.instance.UpdateAwkwardMultiLabel (awkwardLevel);
+							}
+							else 
+							{
+								currentAwkwardStep++;
+
+								UpdateAwkwardLevel ();
+							}						
+						}
+						else 
+						{
 							HLG_UI.instance.ShowPlayerTextBubble (dialog.GetCurrentFollowerLine ());
 							HLG_UI.instance.HideFollowerTextBubble ();
 						}
 					}
 				}
+			}
+
+			break;
+		case State.GRENADE:
+			if (scoreTimer > 0.0f) 
+			{
+				scoreTimer -= Time.deltaTime;
+
+				if (scoreTimer <= 0.0f)
+					EndGame ();
 			}
 			break;
 		case State.ENDGAME:
@@ -143,10 +195,28 @@ public class HLG_GameManager : MonoBehaviour
 		}
 	}
 
+	void UpdateAwkwardLevel()
+	{
+		float lerp = (float)currentAwkwardStep / (float)numberOfSteps;
+
+		awkwardLevel = Mathf.Lerp (1.0f, maxAwkwardMulti, lerp);
+
+		HLG_UI.instance.SetAwkwardMeterFill (lerp);
+
+		HLG_UI.instance.UpdateAwkwardMultiLabel (awkwardLevel);
+
+	}
+
 	//TODO: multiplier?
 	public void ScorePoints(int p)
 	{
-		points += p;
+		objectsExploded++;
+
+		points += (int)((float)p * awkwardLevel);
+
+		HLG_UI.instance.UpdateScore (points);
+
+		scoreTimer = scoreDelay;
 	}
 
 	void AssignIntroInputs()
@@ -160,5 +230,18 @@ public class HLG_GameManager : MonoBehaviour
 			InputControl.AddInputMapping (i, this);
 			InputControl.AddInputHandler (InputControl.eDeviceType.Gamepad, InputControl.Button.A, StartIntro, null, null, i);
 		}
+	}
+
+	public void GrenadeDropped()
+	{
+		HLG_UI.instance.HideFollowerTextBubble ();
+		HLG_UI.instance.HidePlayerTextBubble ();
+
+		currentState = State.GRENADE;
+	}
+
+	public void GrenadeExploded()
+	{
+		scoreTimer = scoreDelay;
 	}
 }

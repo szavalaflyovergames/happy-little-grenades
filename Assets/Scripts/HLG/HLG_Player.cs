@@ -129,6 +129,8 @@ public class HLG_Player : MonoBehaviour
 		grenade.GetComponent<HLG_Grenade> ().Drop (this);
 
 		currentState = State.RUNNING;
+
+		HLG_GameManager.instance.GrenadeDropped ();
 	}
 
 	public void GrenadeExploded()

@@ -25,11 +25,15 @@ public class HLG_UI : MonoBehaviour
 	public GameObject followerWordBubble;
 	public TextMeshProUGUI followerText;
 
+	public TextMeshProUGUI multiplierValueText;
+
 	public static HLG_UI instance;
 
 	void Awake()
 	{
 		instance = this;
+
+		awkwardMeterFill.fillAmount = 0.0f;
 	}
 
 
@@ -38,6 +42,10 @@ public class HLG_UI : MonoBehaviour
 	{
 		playerWordBubble.SetActive (false);	
 		followerWordBubble.SetActive (false);	
+
+		scoreLabel.gameObject.SetActive (false);
+
+		awkwardMeter.SetActive (false);
 	}
 	
 	// Update is called once per frame
@@ -45,7 +53,7 @@ public class HLG_UI : MonoBehaviour
 	{
 		if (lerpTimer > 0.0f) 
 		{
-			lerpDelay -= Time.deltaTime;
+			lerpTimer -= Time.deltaTime;
 
 			awkwardMeterFill.fillAmount = Mathf.Lerp (fillTarget, prevFill, lerpTimer / lerpDelay);
 		}
@@ -56,7 +64,13 @@ public class HLG_UI : MonoBehaviour
 		prevFill = awkwardMeterFill.fillAmount;			
 		fillTarget = fill;
 		lerpTimer = lerpDelay;
-		
+	}
+
+	public void UpdateAwkwardMultiLabel(float multi)
+	{
+		multiplierValueText.text =	string.Format ("{0:N1}", multi) + "X";
+
+		awkwardMeter.SetActive (true);
 	}
 
 	public void ShowPlayerTextBubble(string text)
@@ -79,5 +93,12 @@ public class HLG_UI : MonoBehaviour
 	public void HideFollowerTextBubble()
 	{
 		followerWordBubble.SetActive (false);
+	}
+
+	public void UpdateScore(int points)
+	{
+		scoreLabel.gameObject.SetActive (true);
+
+		scoreLabel.text = points.ToString ();
 	}
 }
