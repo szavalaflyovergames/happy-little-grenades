@@ -15,12 +15,12 @@ public class HLG_Grenade : MonoBehaviour
 
 	void Update()
 	{
-		explosionTimer -= Time.deltaTime;
-
-		if (explosionTimer <= 0.0f) 
-		{
-			Explode ();
-		}
+//		explosionTimer -= Time.deltaTime;
+//
+//		if (explosionTimer <= 0.0f) 
+//		{
+//			Explode ();
+//		}
 	}
 
 	public void Drop(HLG_Player o)
@@ -28,6 +28,14 @@ public class HLG_Grenade : MonoBehaviour
 		owner = o;
 	
 		explosionTimer = explosionDelay;
+	
+		Rigidbody myRigidbody = GetComponent<Rigidbody> ();
+
+		myRigidbody.AddForce (Vector3.up * 700.0f);
+
+		float torque = Random.Range (-100.0f, 100.0f);
+
+		myRigidbody.AddTorque (new Vector3 (0.0f, 0.0f, torque));
 	}
 
 	//TODO: explode
@@ -38,9 +46,18 @@ public class HLG_Grenade : MonoBehaviour
 		GameObject.Instantiate (explosionPrefab, transform.position, Quaternion.Euler(-90.0f, 0.0f, 0.0f)); 
 
 		owner.GrenadeExploded ();
+		HLG_GameManager.instance.GrenadeExploded ();
 
 		GameObject.Destroy (gameObject);	
 
 		AudioSource.PlayClipAtPoint (HLG_SoundManager.instance.explosionMedium, transform.position);
+	}
+
+	void OnTriggerEnter(Collider floor)
+	{
+		if (floor.gameObject.layer == LayerMask.NameToLayer ("Floor")) 
+		{
+			Explode ();
+		}
 	}
 }

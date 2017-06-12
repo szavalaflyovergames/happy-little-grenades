@@ -11,6 +11,7 @@ public class HLG_NPC : MonoBehaviour
 
 	public float wanderSpeed = 3.0f;
 	public float followSpeed = 7.0f;
+	public float runSpeed = 10.0f;
 
 	public float followDistance = 1.0f;
 
@@ -20,9 +21,11 @@ public class HLG_NPC : MonoBehaviour
 
 	SpriteRenderer mySprite;
 
+	public Sprite explodedSprite;
+
 	public enum State
 	{
-		WANDER, FOLLOW, EXPLODED
+		WANDER, FOLLOW, EXPLODED, RUN
 	}
 
 	State currentState = State.WANDER;
@@ -57,6 +60,9 @@ public class HLG_NPC : MonoBehaviour
 			FollowUpdate ();
 			break;
 		case State.EXPLODED:
+			break;
+		case State.RUN:
+			WanderUpdate ();
 			break;
 		}
 	
@@ -111,11 +117,45 @@ public class HLG_NPC : MonoBehaviour
 		myRigidbody.AddTorque (new Vector3 (0.0f, 0.0f, torque));
 
 		currentState = State.EXPLODED;
+
+		mySprite.sprite = explodedSprite;
 	}
+
+	public void StartRunning()
+	{
+		if (currentState == State.FOLLOW) 
+		{
+			Vector3 vecTo = transform.position - HLG_GameManager.instance.player.transform.position;
+
+			movementDirection = vecTo.normalized;
+			myRigidbody.velocity = movementDirection * runSpeed;
+
+			currentState = State.RUN;
+		}
+		else if (currentState != State.EXPLODED) 
+		{
+			myRigidbody.velocity = movementDirection * runSpeed;
+			currentState = State.RUN;
+		}
+	}
+
 
 	public void SetToFollower()
 	{
 		currentState = State.FOLLOW;
+	}
+
+	public void StopFollowing()
+	{
+		if (currentState != State.EXPLODED) 
+		{
+			currentState = State.WANDER;
+
+			Vector3 vecTo = transform.position - HLG_GameManager.instance.player.transform.position;
+
+			movementDirection = vecTo.normalized;
+			myRigidbody.velocity = movementDirection * wanderSpeed;
+		}
 	}
 
 	public void OnCollisionEnter(Collision col)
@@ -132,7 +172,10 @@ public class HLG_NPC : MonoBehaviour
 
 			movementDirection = reflect;
 
-			myRigidbody.velocity = movementDirection * wanderSpeed;
+			if (currentState == State.WANDER)
+				myRigidbody.velocity = movementDirection * wanderSpeed;
+			else if (currentState == State.RUN)
+				myRigidbody.velocity = movementDirection * runSpeed;
 		}
 	}
 }

@@ -38,10 +38,13 @@ public class HLG_Player : MonoBehaviour
 		IDLE, WALKING, GRENADE, RUNNING
 	}
 
+	public string[] grenadeLines;
+
 	const string HORIZONTAL_AXIS = "Horizontal";
 	const string HORIZONTAL_DPAD = "HorizontalDPad";
 	const string VERTICAL_AXIS = "Vertical";
 	const string VERTICAL_DPAD = "VerticalDPad";
+
 
 	void Awake()
 	{
@@ -102,10 +105,10 @@ public class HLG_Player : MonoBehaviour
 				if (vertAxis == 0.0f)
 					vertAxis = InputControl.GetJoystickAxis (i, VERTICAL_DPAD); 
 
+				horAxis = InputControl.GetJoystickAxis(i, HORIZONTAL_AXIS);
+
 				if (horAxis == 0.0f)
 					horAxis = InputControl.GetJoystickAxis (i, HORIZONTAL_DPAD);
-				
-				horAxis = InputControl.GetJoystickAxis(i, HORIZONTAL_AXIS);
 			
 				if (horAxis != 0.0f || vertAxis != 0.0f)
 					return;
@@ -141,7 +144,7 @@ public class HLG_Player : MonoBehaviour
 
 		Debug.Log ("Dropping 'Nades!");
 
-		GameObject grenade = GameObject.Instantiate (grenadePrefab, transform.position, Quaternion.identity);
+		GameObject grenade = GameObject.Instantiate (grenadePrefab, transform.position + Vector3.up * .5f, Quaternion.identity);
 
 		grenade.GetComponent<HLG_Grenade> ().Drop (this);
 
@@ -153,5 +156,10 @@ public class HLG_Player : MonoBehaviour
 	public void GrenadeExploded()
 	{
 		
+	}
+
+	public string GetEmergencyGrenadeLine()
+	{
+		return grenadeLines [Random.Range (0, grenadeLines.Length)];
 	}
 }

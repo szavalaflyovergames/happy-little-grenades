@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using DG.Tweening;
 
 //This script contains the core behavior for the game
 public class HLG_GameManager : MonoBehaviour 
@@ -32,8 +33,12 @@ public class HLG_GameManager : MonoBehaviour
 	public float scoreDelay = 5.0f;
 
 	public AudioSource followerVoice;
+	AudioSource crowdAudio;
+	public AudioSource crowdPanicAudio;
 
 	//List<HLG_NPC> npcs;
+
+	HLG_NPC follower;
 
 	State currentState;
 	public enum State
@@ -46,6 +51,8 @@ public class HLG_GameManager : MonoBehaviour
 		instance = this;
 	
 		dialog = GetComponentInChildren<HLG_Dialog> ();
+
+		crowdAudio = GetComponent<AudioSource> ();
 	}
 
 	// Use this for initialization
@@ -58,23 +65,36 @@ public class HLG_GameManager : MonoBehaviour
 	
 		followerVoice.Pause ();
 		player.GetComponent<AudioSource> ().Pause ();
+
 	}
 
 	void StartIntro(MonoBehaviour comp)
 	{
+		InputControl.ClearControlMappings ();
+
 		dialog.SelectIntro ();
 
 		HLG_UI.instance.HideIntro ();
 		HLG_UI.instance.ShowPlayerTextBubble (dialog.GetCurrentIntroLine ());
+		HLG_UI.instance.UpdateAwkwardMultiLabel (1.0f);
+		HLG_UI.instance.SetAwkwardMeterFill (0.0f);
 
 		lineTimer = lineDelay;
 
 		currentState = State.INTRO;
+
+		crowdAudio.PlayOneShot (HLG_SoundManager.instance.menuSound);
+
+//		iTween.ShakeScale (HLG_UI.instance.awkwardMeter, iTween.Hash ("amount", new Vector3(.10f, .10f, 0.0f),
+//			"islocal", true, "time", .25f, "looptype", iTween.LoopType.pingPong));
+
 	}
 
 	void RestartGame(MonoBehaviour comp)
 	{
 		UnityEngine.SceneManagement.SceneManager.LoadScene (0);
+
+		crowdAudio.PlayOneShot (HLG_SoundManager.instance.menuSound, .5f);
 	}
 
 	void StartGame()
@@ -91,6 +111,8 @@ public class HLG_GameManager : MonoBehaviour
 		Invoke ("StartFollowerConversation", 2.0f);
 
 		currentState = State.PLAYING;
+
+
 	}
 
 	void EndGame()
@@ -126,7 +148,9 @@ public class HLG_GameManager : MonoBehaviour
 	{
 		int index = Random.Range (0, testNPCs.Length);
 
-		testNPCs [index].SetToFollower ();
+		follower = testNPCs [index];
+
+		follower.SetToFollower ();
 	}
 
 	// Update is called once per frame
@@ -179,10 +203,14 @@ public class HLG_GameManager : MonoBehaviour
 							//If it's the last line, end the awkward
 							if (dialog.currentLine == dialog.followerConversations [dialog.currentConversation].lines.Length - 1) 
 							{
+								follower.StopFollowing ();
+
 								awkwardLevel = 1.0f;
 
 								HLG_UI.instance.SetAwkwardMeterFill (0.0f);
 								HLG_UI.instance.UpdateAwkwardMultiLabel (awkwardLevel);
+
+								DOTween.Kill (HLG_UI.instance.awkwardMeter.transform);
 							}
 							else 
 							{
@@ -225,6 +253,16 @@ public class HLG_GameManager : MonoBehaviour
 
 		HLG_UI.instance.UpdateAwkwardMultiLabel (awkwardLevel);
 
+		if (lerp >= .99f) 
+		{
+			TweenParams tParms = new TweenParams ().SetLoops (-1).SetEase (Ease.OutElastic);
+
+			HLG_UI.instance.awkwardMeter.transform.DOShakePosition (.2f, 10.0f, 50, 180).SetAs (tParms);
+		}
+		else 
+		{
+			DOTween.Kill (HLG_UI.instance.awkwardMeter.transform);
+		}
 	}
 
 	//TODO: multiplier?
@@ -268,13 +306,23 @@ public class HLG_GameManager : MonoBehaviour
 	public void GrenadeDropped()
 	{
 		HLG_UI.instance.HideFollowerTextBubble ();
-		HLG_UI.instance.HidePlayerTextBubble ();
+		HLG_UI.instance.ShowPlayerTextBubble (player.GetEmergencyGrenadeLine());
 
 		currentState = State.GRENADE;
 	}
 
 	public void GrenadeExploded()
 	{
+		HLG_UI.instance.HidePlayerTextBubble ();
+
 		scoreTimer = scoreDelay;
+
+		crowdAudio.Stop ();
+		crowdPanicAudio.Play ();
+
+		for (int i = 0; i < testNPCs.Length; ++i) 
+		{
+			testNPCs [i].StartRunning ();
+		}
 	}
 }

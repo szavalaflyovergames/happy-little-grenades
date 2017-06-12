@@ -12,6 +12,7 @@ public class HLG_SoundManager : MonoBehaviour
 	public AudioClip grumbleBigMale;
 	public AudioClip grumbleSmallFemale;
 	public AudioClip grumbleSmallMale;
+	public AudioClip menuSound;
 
 	public static HLG_SoundManager instance;
 

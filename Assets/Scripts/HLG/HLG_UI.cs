@@ -27,6 +27,9 @@ public class HLG_UI : MonoBehaviour
 	public GameObject followerWordBubble;
 	public TextMeshProUGUI followerText;
 
+	public TextMeshProUGUI highScoreText;
+	public TextMeshProUGUI endGameHighScoreText;
+
 	public TextMeshProUGUI multiplierValueText;
 
 	public static HLG_UI instance;
@@ -50,6 +53,8 @@ public class HLG_UI : MonoBehaviour
 		scoreLabel.gameObject.SetActive (false);
 
 		awkwardMeter.SetActive (false);
+
+		highScoreText.text = PlayerPrefs.GetInt ("HighScore", 0).ToString();
 	}
 	
 	// Update is called once per frame
@@ -75,6 +80,13 @@ public class HLG_UI : MonoBehaviour
 
 		scoreLabel.gameObject.SetActive (false);
 		awkwardMeter.SetActive (false);
+
+		if (points > PlayerPrefs.GetInt ("HighScore", 0))
+		{	
+			PlayerPrefs.SetInt ("HighScore", points);
+		}
+
+		endGameHighScoreText.text = PlayerPrefs.GetInt ("HighScore", 0).ToString ();
 	}
 
 	public void SetAwkwardMeterFill(float fill)
